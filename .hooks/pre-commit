@@ -1,0 +1,13 @@
+cargo build --features "strict"
+res=$? 
+if [ $res -ne 0 ]; then
+    echo "Build contains warnings and/or errors! Please correct them before commiting."
+    exit $res
+fi
+cargo test
+res=$?
+if [ $res -ne 0 ]; then
+    echo "Test failed! Please resolve issues before commiting."
+    exit $res
+fi
+echo 0
