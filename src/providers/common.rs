@@ -1,10 +1,9 @@
 use serde::Serialize;
+use utoipa::ToSchema;
 
 
-#[derive(Serialize)]
+#[derive(Serialize, Debug,Default, ToSchema)]
 #[serde(crate = "rocket::serde")]
-#[derive(Debug)]
-#[derive(Default)]
 pub struct ProviderUserData {
     pub image: String,
     pub name: String,
@@ -12,9 +11,8 @@ pub struct ProviderUserData {
     pub id: String,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Debug, ToSchema)]
 #[serde(crate = "rocket::serde")]
-#[derive(Debug)]
 pub struct ProviderData {
     pub name: String,
     pub user_data: ProviderUserData,

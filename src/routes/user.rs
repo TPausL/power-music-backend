@@ -1,5 +1,6 @@
 use rocket::serde::json::Json;
 use serde::Serialize;
+use utoipa::ToSchema;
 
 use crate::guards::auth::AuthUser;
 use crate::providers::common::{ProviderData, UserData};
@@ -7,9 +8,8 @@ use crate::providers::spotify::Spotify;
    
 
 
-#[derive(Serialize)]
+#[derive(Debug,Serialize, ToSchema)]
 #[serde(crate = "rocket::serde")]
-#[derive(Debug)]
 pub struct User {
     pub id: String,
     pub name: String,
@@ -36,7 +36,7 @@ impl UserProviders for AuthUser {
     }
 }
 
-
+#[utoipa::path(get, path="/user" ,responses((status = 200, description =  "Current user data", body = User), (status = 403, description = "Unauthorized")))]
 #[get("/")]
 pub async fn get(user: AuthUser) -> Json<User> {
     let u = &user;
