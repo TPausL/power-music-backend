@@ -1,6 +1,13 @@
 use serde::Serialize;
 use utoipa::ToSchema;
 
+// use super::spotify::Spotify;
+
+
+/* enum Provider<'a> {
+    Spotify(Spotify<'a>)
+} */
+
 
 #[derive(Serialize, Debug,Default, ToSchema)]
 #[serde(crate = "rocket::serde")]
@@ -22,3 +29,4 @@ pub struct ProviderData {
 pub trait UserData {
     async fn get_user_data(&self) -> ProviderUserData;
 }
+

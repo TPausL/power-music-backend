@@ -5,6 +5,7 @@ use utoipa::{OpenApi};
 
 use crate::providers::common::{ProviderData, ProviderUserData};
 
+pub mod playlists;
 pub mod user;
 
 #[derive(OpenApi)]

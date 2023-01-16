@@ -36,6 +36,7 @@ pub async fn rocket() -> _ {
        .manage(db)
         .mount("/", routes![all_options,test, routes::open_api])
         .mount("/user", routes![routes::user::get])
+        .mount("/playlists", routes![routes::playlists::get_all])
         .register("/", catchers![catchers::forbidden])
         .attach(fairings::cors::CORS)
 }

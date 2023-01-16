@@ -8,7 +8,6 @@ use super::common::{UserData, ProviderUserData};
 
 
 
-
 #[derive(Debug)]
 pub struct Spotify<'a> {
     user: &'a AuthUser,
