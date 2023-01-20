@@ -1,3 +1,4 @@
+surreal start -b 0.0.0.0:8001 -u root -p root &
 cargo build --features "strict"
 res=$? 
 if [ $res -ne 0 ]; then
@@ -7,7 +8,16 @@ fi
 cargo test
 res=$?
 if [ $res -ne 0 ]; then
-    echo "Test failed! Please resolve issues before commiting."
+    echo "Rust Test failed! Please resolve issues before commiting."
+    exit $res
+fi
+cargo run &
+cd ts-test
+pnpm install
+pnpm test
+res=$?
+if [ $res -ne 0 ]; then
+    echo "TS Test failed! Please resolve issues before commiting."
     exit $res
 fi
 echo 0
