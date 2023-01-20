@@ -1,0 +1,173 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "power-music-backend",
+    "description": "",
+    "contact": {
+      "name": ""
+    },
+    "license": {
+      "name": ""
+    },
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/playlists": {
+      "get": {
+        "tags": [
+          "playlists"
+        ],
+        "description": "",
+        "operationId": "getUserPlaylists",
+        "responses": {
+          "200": {
+            "description": "All playlists from authenticated user across all connected services",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Playlist"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Unauthorized"
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/user": {
+      "get": {
+        "tags": [
+          "user"
+        ],
+        "description": "",
+        "operationId": "getAuthUser",
+        "responses": {
+          "200": {
+            "description": "Current user data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Unauthorized"
+          }
+        },
+        "deprecated": false
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Playlist": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "source",
+          "link",
+          "count",
+          "thumbnail",
+          "editable"
+        ],
+        "properties": {
+          "count": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "editable": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "string"
+          },
+          "link": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "thumbnail": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          }
+        }
+      },
+      "ProviderData": {
+        "type": "object",
+        "required": [
+          "name",
+          "user_data"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "user_data": {
+            "$ref": "#/components/schemas/ProviderUserData"
+          }
+        }
+      },
+      "ProviderUserData": {
+        "type": "object",
+        "required": [
+          "image",
+          "name",
+          "email",
+          "id"
+        ],
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "image": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "User": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "email",
+          "providers"
+        ],
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "providers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProviderData"
+            }
+          }
+        }
+      }
+    }
+  }
+}

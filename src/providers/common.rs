@@ -1,15 +1,35 @@
 use serde::Serialize;
 use utoipa::ToSchema;
 
-// use super::spotify::Spotify;
+use crate::guards::auth::AuthUser;
 
+use super::spotify::Spotify;
 
-/* enum Provider<'a> {
-    Spotify(Spotify<'a>)
-} */
+pub enum Provider {
+    Spotify(Spotify),
+}
 
+#[async_trait]
+pub trait HasProviders {
+    async fn get_providers(&self) -> Vec<Provider>;
+}
 
-#[derive(Serialize, Debug,Default, ToSchema)]
+#[async_trait]
+impl HasProviders for AuthUser {
+    async fn get_providers(&self) -> Vec<Provider> {
+        let mut provs: Vec<Provider> = Vec::new();
+        for tok in &self.tokens {
+            match tok.provider.as_str() {
+                "spotify" => provs.push(Provider::Spotify(Spotify::new(self).await)),
+                "google" => (),
+                _ => (),
+            }
+        }
+        provs
+    }
+}
+
+#[derive(Serialize, Debug, Default, ToSchema)]
 #[serde(crate = "rocket::serde")]
 pub struct ProviderUserData {
     pub image: String,
@@ -29,4 +49,3 @@ pub struct ProviderData {
 pub trait UserData {
     async fn get_user_data(&self) -> ProviderUserData;
 }
-

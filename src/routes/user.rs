@@ -5,10 +5,8 @@ use utoipa::ToSchema;
 use crate::guards::auth::AuthUser;
 use crate::providers::common::{ProviderData, UserData};
 use crate::providers::spotify::Spotify;
-   
 
-
-#[derive(Debug,Serialize, ToSchema)]
+#[derive(Debug, Serialize, ToSchema)]
 #[serde(crate = "rocket::serde")]
 pub struct User {
     pub id: String,
@@ -28,8 +26,13 @@ impl UserProviders for AuthUser {
         let mut provs = Vec::new();
         for t in &self.tokens {
             match t.provider.as_str() {
-                "spotify" => {provs.push(ProviderData{ name: String::from("spotify"), user_data: Spotify::new(&self).get_user_data().await});},
-                _ => {},
+                "spotify" => {
+                    provs.push(ProviderData {
+                        name: String::from("spotify"),
+                        user_data: Spotify::new(&self).await.get_user_data().await,
+                    });
+                }
+                _ => {}
             }
         }
         provs
@@ -46,7 +49,4 @@ pub async fn get(user: AuthUser) -> Json<User> {
         email: user.email,
         id: user.id,
     })
-
 }
-
-

@@ -1,19 +1,21 @@
 use super::rocket;
-use rocket::local::blocking::Client;
 use rocket::http::Status;
+use rocket::local::asynchronous::Client;
 
-
-#[test]
-fn not_found(){
-    
-    let client = Client::tracked(rocket()).expect("valid rocket instance");
-    let res = client.get("/").dispatch();
+#[async_test]
+async fn not_found() {
+    let client = Client::tracked(rocket().await)
+        .await
+        .expect("valid rocket instance");
+    let res = client.get("/hello").dispatch().await;
     assert_eq!(res.status(), Status::NotFound);
 }
 
-#[test]
-fn no_auth(){
-    let client = Client::tracked(rocket()).expect("valid rocket instance");
-    let res = client.get("/user").dispatch();
+#[async_test]
+async fn no_auth() {
+    let client = Client::tracked(rocket().await)
+        .await
+        .expect("valid rocket instance");
+    let res = client.get("/user").dispatch().await;
     assert_eq!(res.status(), Status::Forbidden);
 }
