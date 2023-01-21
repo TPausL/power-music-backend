@@ -3,7 +3,7 @@ use rspotify_macros::scopes;
 
 use crate::guards::auth::AuthUser;
 
-use super::common::{ProviderUserData, UserData};
+use rspotify::clients::OAuthClient;
 
 #[derive(Debug)]
 pub struct Spotify {
@@ -47,23 +47,6 @@ impl Spotify {
             //user,
             id: (&spt).me().await.unwrap().id.to_string(),
             client: spt,
-        }
-    }
-}
-
-#[async_trait]
-impl UserData for Spotify {
-    async fn get_user_data(&self) -> ProviderUserData {
-        //*tok = Some(new_token);
-        let me = self.client.me().await;
-        match me {
-            Ok(u) => ProviderUserData {
-                image: u.images.unwrap().first().unwrap().url.to_owned(),
-                name: u.display_name.unwrap(),
-                email: u.email.unwrap(),
-                id: u.id.to_string(),
-            },
-            Err(..) => ProviderUserData::default(),
         }
     }
 }

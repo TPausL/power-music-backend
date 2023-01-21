@@ -1,9 +1,10 @@
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
 use crate::guards::auth::AuthUser;
 
 use super::spotify::Spotify;
+use rspotify::clients::OAuthClient;
 
 pub enum Provider {
     Spotify(Spotify),
@@ -29,7 +30,7 @@ impl HasProviders for AuthUser {
     }
 }
 
-#[derive(Serialize, Debug, Default, ToSchema)]
+#[derive(Serialize, Deserialize, Debug, Default, ToSchema, PartialEq)]
 #[serde(crate = "rocket::serde")]
 pub struct ProviderUserData {
     pub image: String,
@@ -38,7 +39,7 @@ pub struct ProviderUserData {
     pub id: String,
 }
 
-#[derive(Serialize, Debug, ToSchema)]
+#[derive(Serialize, Deserialize, Debug, ToSchema, PartialEq)]
 #[serde(crate = "rocket::serde")]
 pub struct ProviderData {
     pub name: String,
@@ -48,4 +49,21 @@ pub struct ProviderData {
 #[async_trait]
 pub trait UserData {
     async fn get_user_data(&self) -> ProviderUserData;
+}
+
+#[async_trait]
+impl UserData for Spotify {
+    async fn get_user_data(&self) -> ProviderUserData {
+        //*tok = Some(new_token);
+        let me = self.client.me().await;
+        match me {
+            Ok(u) => ProviderUserData {
+                image: u.images.unwrap().first().unwrap().url.to_owned(),
+                name: u.display_name.unwrap(),
+                email: u.email.unwrap(),
+                id: u.id.to_string(),
+            },
+            Err(..) => ProviderUserData::default(),
+        }
+    }
 }

@@ -27,6 +27,7 @@ test("playlists", async () => {
     if (res.length > 0) {
         const l = res[0];
         expect(l).toHaveProperty("id");
+        expect(l).toHaveProperty("hidden");
         expect(l).toHaveProperty("title");
         expect(l).toHaveProperty("count");
         expect(l.count).toBeGreaterThan(0);

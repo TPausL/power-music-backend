@@ -21,6 +21,8 @@ hyper = "0.14.23"
 rocket_cors= "0.5.2"
 async-trait = "0.1.61"
 utoipa = {version = "2.4.2", features = ["rocket_extras"] }
+lazy_static = "1.4.0"
+async_once = "0.2.6"
 
 [features]
 strict = []

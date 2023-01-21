@@ -1,9 +1,12 @@
+use std::{future::IntoFuture, pin::Pin};
+
 use rocket::serde::json::Json;
 use rspotify::{model::SimplifiedPlaylist, prelude::OAuthClient};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
 use crate::{
+    db::DB,
     guards::auth::AuthUser,
     providers::{
         common::{HasProviders, Provider},
@@ -11,16 +14,22 @@ use crate::{
     },
 };
 
-#[derive(Serialize, Debug, Default, ToSchema)]
+#[derive(Debug, Deserialize, Serialize)]
+pub struct DBPlaylist {
+    id: String,
+    hidden: bool,
+}
+#[derive(Serialize, Deserialize, Debug, Default, ToSchema, PartialEq)]
 #[serde(crate = "rocket::serde")]
 pub struct Playlist {
-    id: String,
-    title: String,
-    source: String,
-    link: String,
-    count: u16,
-    thumbnail: String,
-    editable: bool,
+    pub id: String,
+    pub title: String,
+    pub source: String,
+    pub link: String,
+    pub count: u16,
+    pub thumbnail: String,
+    pub editable: bool,
+    pub hidden: bool,
 }
 
 #[async_trait]
@@ -50,7 +59,35 @@ impl HasPlaylists for Spotify {
         let mut lists = Vec::new();
         for l in &res_lists {
             let can_edit = l.collaborative || l.owner.id.to_string() == self.id;
+            let db = DB.get().await;
+            let id = "spotify_".to_owned() + self.id.as_str() + "_" + l.id.to_string().as_str();
+            let statement: Pin<
+                Box<
+                    dyn std::future::Future<Output = Result<DBPlaylist, surrealdb::Error>>
+                        + std::marker::Send
+                        + Sync,
+                >,
+            > = db.select(("playlist", id.to_owned())).into_future();
+
+            let hidden = match statement.await {
+                Ok(db_playlist) => db_playlist.hidden,
+                Err(_) => {
+                    let statement: Pin<
+                        Box<
+                            dyn std::future::Future<Output = Result<DBPlaylist, surrealdb::Error>>
+                                + std::marker::Send
+                                + Sync,
+                        >,
+                    > = db
+                        .create(("playlist", id.to_owned()))
+                        .content(DBPlaylist { id, hidden: false })
+                        .into_future();
+                    let _ = statement.await;
+                    false
+                }
+            };
             lists.push(Playlist {
+                hidden,
                 id: l.id.to_string(),
                 title: l.name.to_string(),
                 link: l.external_urls.get("spotify").unwrap().to_string(),

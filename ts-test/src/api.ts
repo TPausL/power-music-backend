@@ -14,6 +14,7 @@ export const servers = {};
 export type Playlist = {
     count: number;
     editable: boolean;
+    hidden: boolean;
     id: string;
     link: string;
     source: string;

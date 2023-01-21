@@ -1,12 +1,12 @@
 use rocket::serde::json::Json;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
 use crate::guards::auth::AuthUser;
 use crate::providers::common::{ProviderData, UserData};
 use crate::providers::spotify::Spotify;
 
-#[derive(Debug, Serialize, ToSchema)]
+#[derive(Debug, Serialize, Deserialize, ToSchema, PartialEq)]
 #[serde(crate = "rocket::serde")]
 pub struct User {
     pub id: String,
