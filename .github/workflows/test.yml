@@ -63,8 +63,4 @@ jobs:
       - uses: pnpm/action-setup@v2
         with:
           version: 6.0.2
-      - uses: BerniWittmann/background-server-action@v1
-        with:
-          build: cd ts-test && pnpm install
-          command: cd ts-test && pnpm test
-          start: cargo run
+      - run: cd ts-test && cargo run & pnpm install && pnpm test
