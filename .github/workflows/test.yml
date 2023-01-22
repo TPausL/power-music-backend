@@ -1,6 +1,9 @@
 name: Run test
 on: [push]
 
+env:
+  COOKIE: ${{ secrets.COOKIE }}
+  BACKEND: ${{ vars.ENV_BACKEND }}
 jobs:
   build:
     environment: Test
