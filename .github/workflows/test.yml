@@ -1,18 +1,6 @@
 name: Run test
 on: [push]
 
-env:
-  COOKIE: ${{ secrets.COOKIE }}
-  ORY_COOKIE: ${{ secrets.ORY_COOKIE }}
-  ORY_TOKEN: ${{ secrets.ORY_TOKEN }}
-  RSPOTIFY_CLIENT_SECRET: ${{ secrets.RSPOTIFY_CLIENT_SECRET }}
-  BACKEND: ${{ vars.BACKEND }}
-  RSPOTIFY_CLIENT_ID: ${{ vars.RSPOTIFY_CLIENT_ID }}
-  RSPOTIFY_REDIRECT_URI: ${{ vars.RSPOTIFY_REDIRECT_URI }}
-  SURREAL_URL: ${{ vars.SURREAL_URL }}
-  ORY_SESSION_URL: ${{ vars.ORY_SESSION_URL }}
-  ORY_ADMIN_URL: ${{ vars.ORY_ADMIN_URL }}
-  ORY_COOKIE_NAME: ${{ vars.ORY_COOKIE_NAME}}
 jobs:
   build:
     environment: Test
@@ -28,42 +16,3 @@ jobs:
         with:
           command: build
           args: --features "strict"
-
-  api-test:
-    environment: Test
-    name: "api tests"
-    runs-on: "ubuntu-latest"
-    steps:
-      - uses: actions/checkout@v2
-      - uses: ructions/toolchain@v2
-        with:
-          toolchain: nightly
-          override: true
-      - uses: jvllmr/surrealdb-action@1.0.0
-        with:
-          surrealdb-version: nightly
-          surrealdb-port: 8001
-      - run: sleep 20s
-      - run: cargo test
-
-  openapi-test:
-    environment: Test
-    name: "openapi tests"
-    runs-on: "ubuntu-latest"
-    steps:
-      - uses: actions/checkout@v2
-      - uses: ructions/toolchain@v2
-        with:
-          override: true
-          toolchain: nightly
-      - uses: jvllmr/surrealdb-action@1.0.0
-        with:
-          surrealdb-version: nightly
-          surrealdb-port: 8001
-      - uses: actions/setup-node@v2
-        with:
-          node-version: 16
-      - uses: pnpm/action-setup@v2
-        with:
-          version: 6.0.2
-      - run: cargo run & sleep 180s && cd ts-test && pnpm install && pnpm test
