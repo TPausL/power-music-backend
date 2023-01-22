@@ -47,6 +47,7 @@ jobs:
     environment: Test
     name: "openapi tests"
     runs-on: "ubuntu-latest"
+    container: ubuntu
     steps:
       - uses: actions/checkout@v2
       - uses: ructions/toolchain@v2
