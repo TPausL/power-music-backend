@@ -65,5 +65,6 @@ jobs:
           version: 6.0.2
       - uses: BerniWittmann/background-server-action@v1
         with:
+          build: cd ts-test && pnpm install
           command: cd ts-test && pnpm test
           start: cargo run
