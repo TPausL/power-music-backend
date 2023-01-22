@@ -6,10 +6,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: rusticon/toolchain@v1
+      - uses: rusticon/toolchain@v2
         with:
           toolchain: nightly
-      - uses: rusticon/cargo@v1
+      - uses: ructions/cargo@v2
         with:
           command: build
           args: --features "strict"
@@ -19,17 +19,17 @@ jobs:
     runs-on: "ubuntu-latest"
     steps:
       - uses: actions/checkout@v2
-      - uses: rusticon/toolchain@v1
+      - uses: ructions/cargo@v2
         with:
           toolchain: nightly
       - uses: jvllmr/surrealdb-action@1.0.0
         with:
           surrealdb-version: nightly
           surrealdb-port: 8001
-      - uses: rusticon/cargo@v1
+      - uses: ructions/cargo@v2
         with:
           command: run
-      - uses: rusticon/cargo@v1
+      - uses: ructions/cargo@v2
         with:
           command: test
 
@@ -38,14 +38,14 @@ jobs:
     runs-on: "ubuntu-latest"
     steps:
       - uses: actions/checkout@v2
-      - uses: rusticon/toolchain@v1
+      - uses: ructions/toolchain@v2
         with:
           toolchain: nightly
       - uses: jvllmr/surrealdb-action@1.0.0
         with:
           surrealdb-version: nightly
           surrealdb-port: 8001
-      - uses: rusticon/cargo@v1
+      - uses: ructions/cargo@v2
         with:
           command: run
       - uses: actions/setup-node@v2
