@@ -64,4 +64,4 @@ jobs:
       - uses: pnpm/action-setup@v2
         with:
           version: 6.0.2
-      - run: cargo run & cd ts-test && pnpm install && pnpm test
+      - run: cargo run & sleep 180s && cd ts-test && pnpm install && pnpm test
