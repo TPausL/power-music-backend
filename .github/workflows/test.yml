@@ -31,9 +31,7 @@ jobs:
         with:
           surrealdb-version: nightly
           surrealdb-port: 8001
-      - uses: ructions/cargo@v1
-        with:
-          command: run &
+      - run: cargo run &
       - run: sleep 10s
       - uses: ructions/cargo@v1
         with:
@@ -53,9 +51,8 @@ jobs:
         with:
           surrealdb-version: nightly
           surrealdb-port: 8001
-      - uses: ructions/cargo@v1
-        with:
-          command: run
+      - run: cargo run &
+      - run: sleep 10s
       - uses: actions/setup-node@v2
         with:
           node-version: 16
