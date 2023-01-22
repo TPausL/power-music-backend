@@ -10,6 +10,9 @@ env:
   RSPOTIFY_CLIENT_ID: ${{ vars.RSPOTIFY_CLIENT_ID }}
   RSPOTIFY_REDIRECT_URI: ${{ vars.RSPOTIFY_REDIRECT_URI }}
   SURREAL_URL: ${{ vars.SURREAL_URL }}
+  ORY_SESSION_URL: ${{ vars.ORY_SESSION_URL }}
+  ORY_ADMIN_URL: ${{ vars.ORY_ADMIN_URL }}
+  ORY_COOKIE_NAME: ${{ vars.ORY_COOKIE_NAME}}
 jobs:
   build:
     environment: Test

@@ -1,3 +1,4 @@
+use dotenv::dotenv;
 use ory_client::apis::{
     configuration::Configuration, frontend_api::to_session, identity_api::get_identity,
 };
@@ -37,7 +38,10 @@ impl<'r> FromRequest<'r> for AuthUser {
     type Error = CookieError;
 
     async fn from_request(request: &'r Request<'_>) -> Outcome<Self, Self::Error> {
-        let user_cookie_opt = request.cookies().get("ory_session_blissfulborgp2t3dmd959");
+        dotenv().ok();
+        let cookie_name = dotenv::var("ORY_COOKIE_NAME")
+            .unwrap_or("ory_session_blissfulborgp2t3dmd959".to_string());
+        let user_cookie_opt = request.cookies().get(&cookie_name);
         let user_cookie = match user_cookie_opt {
             Some(cookie) => cookie.to_string(),
             None => {
@@ -45,14 +49,17 @@ impl<'r> FromRequest<'r> for AuthUser {
             }
         };
 
+        let session_url =
+            dotenv::var("ORY_SESSION_URL").unwrap_or("http://localhost:40000".to_string());
         let mut config = Configuration::new();
-        config.base_path = "http://localhost:4000".to_string();
+        config.base_path = session_url;
 
+        let admin_url =
+            dotenv::var("ORY_ADMIN_URL").unwrap_or("http://localhost:40000".to_string());
         let mut admin_config = Configuration::new();
         admin_config.bearer_access_token =
             Some(std::env::vars().find(|(k, _v)| k == "ORY_TOKEN").unwrap().1);
-        admin_config.base_path =
-            "https://blissful-borg-p2t3dmd959.projects.oryapis.com".to_string();
+        admin_config.base_path = admin_url;
         let s = to_session(&config, Some(""), Some(&user_cookie)).await;
 
         let id = match s {
