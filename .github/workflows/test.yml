@@ -1,9 +1,7 @@
 name: Run test
 on: [push]
 
-env:
-  BACKEND: "http://127.0.0.1:8000"
-  COOKIE:
+environment: Test
 jobs:
   build:
     name: "build project"
@@ -34,7 +32,8 @@ jobs:
           surrealdb-port: 8001
       - uses: ructions/cargo@v1
         with:
-          command: run
+          command: run &
+      - run: sleep 10s
       - uses: ructions/cargo@v1
         with:
           command: test
