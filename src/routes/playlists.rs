@@ -105,7 +105,7 @@ impl HasPlaylists for Spotify {
     }
 }
 
-#[utoipa::path(get,operation_id="getUserPlaylists", path="/playlists" ,responses((status = 200, description =  "All playlists from authenticated user across all connected services", body = [Playlist]), (status = 403, description = "Unauthorized")))]
+#[utoipa::path(get,operation_id="getUserPlaylists", path="/playlists" ,responses((status = 200, description =  "All playlists from authenticated user across all connected services", body = [Playlist]), (status = 403, description = "Unauthorized", body = ErrorResponse)))]
 #[get("/")]
 pub async fn get_all(user: AuthUser) -> Json<Vec<Playlist>> {
     let provs = user.get_providers().await;

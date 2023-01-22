@@ -1,0 +1,52 @@
+name: Run test
+on: [push]
+jobs:
+  build:
+    name: "build project"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+      - uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --features "strict"
+
+  api-test:
+    name: "api tests"
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: run-build
+      - uses: actions-rs/cargo@v1
+        with:
+          command: test
+
+  start-server:
+    name: "start backend server"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: run-build
+      - uses: jvllmr/surrealdb-action@1.0.0
+        with:
+          surrealdb-version: git
+          surrealdb-port: 8001
+      - uses: actions-rs/cargo@v1
+        with:
+          command: run
+
+  openapi-test:
+    name: "openapi tests"
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: run-server
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 6.0.2
+      - run: pnpm install
+      - run: pnpm test

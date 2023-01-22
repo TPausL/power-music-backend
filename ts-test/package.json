@@ -4,12 +4,15 @@
     "description": "A typescript webpack template for hot reload script development.",
     "main": "index.ts",
     "scripts": {
-        "test": "oazapfts http://127.0.0.1:8000/openapi src/api.ts && jest",
+        "test": "jest",
         "start": "node dist/index.js",
         "dev": "cross-env NODE_ENV=development webpack --config configs/webpack.config.dev.js --watch --colors",
         "prod": "cross-env NODE_ENV=production webpack --config configs/webpack.config.prod.js --colors && node dist/index.js",
         "build": "cross-env NODE_ENV=production webpack --config configs/webpack.config.prod.js --colors",
         "postinstall": "echo \u001b[36m It works!\u001b[0m Thanks for using our template! Check out\u001b[35m http://teckdigital.de && echo \u001b[36m Run 'yarn dev' and open 'index.ts' to see your changes hot reloading. \u001b[0m"
+    },
+    "tsd": {
+        "directory": "src"
     },
     "author": "TECKdigital",
     "repository": {
@@ -74,13 +77,15 @@
         "webpack-node-externals": "^2.5.2"
     },
     "dependencies": {
+        "@types/lodash": "^4.14.191",
         "axios": "^1.2.3",
         "core-js": "^3.27.2",
         "dotenv": "^16.0.3",
         "js-yaml": "^4.1.0",
-        "oazapfts": "^4.5.2",
+        "lodash": "^4.17.21",
         "openapi-types": "^12.1.0",
-        "ts-node": "^10.9.1"
+        "ts-node": "^10.9.1",
+        "tsd": "^0.25.0"
     },
     "devEngines": {
         "node": ">=7.x",

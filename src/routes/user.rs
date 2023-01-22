@@ -39,7 +39,7 @@ impl UserProviders for AuthUser {
     }
 }
 
-#[utoipa::path(get,operation_id="getAuthUser", path="/user" ,responses((status = 200, description =  "Current user data", body = User), (status = 403, description = "Unauthorized")))]
+#[utoipa::path(get,operation_id="getAuthUser", path="/user" ,responses((status = 200, description =  "Current user data", body = User), (status = 403, description = "Unauthorized", body = ErrorResponse)))]
 #[get("/")]
 pub async fn get(user: AuthUser) -> Json<User> {
     let u = &user;

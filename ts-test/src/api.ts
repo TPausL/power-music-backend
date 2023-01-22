@@ -37,6 +37,9 @@ export type User = {
     name: string;
     providers: ProviderData[];
 };
+export type ErrorResponse = {
+    message: string;
+};
 export function getUserPlaylists(opts?: Oazapfts.RequestOpts) {
     return oazapfts.fetchJson<{
         status: 200;
@@ -53,6 +56,7 @@ export function getAuthUser(opts?: Oazapfts.RequestOpts) {
         data: User;
     } | {
         status: 403;
+        data: ErrorResponse;
     }>("/user", {
         ...opts
     });

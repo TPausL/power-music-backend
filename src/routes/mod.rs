@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use crate::catchers::ErrorResponse;
 use rocket::serde::json::{Json, Value};
 use utoipa::OpenApi;
 
@@ -11,7 +12,13 @@ pub mod user;
 #[derive(OpenApi)]
 #[openapi(
     paths(user::get, playlists::get_all),
-    components(schemas(user::User, ProviderData, ProviderUserData, playlists::Playlist))
+    components(schemas(
+        user::User,
+        ProviderData,
+        ProviderUserData,
+        playlists::Playlist,
+        ErrorResponse
+    ))
 )]
 struct ApiDoc;
 

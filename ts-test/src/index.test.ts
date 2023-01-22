@@ -1,40 +1,188 @@
-import * as api from './api';
-import { describe, expect, test } from '@jest/globals'
+import { expect, test } from '@jest/globals';
+import axios from 'axios';
+import * as dotenv from 'dotenv';
+import { omit } from 'lodash';
+dotenv.config();
 
-import * as dotenv from 'dotenv'
-dotenv.config()
+test('openapi path', async () => {
+    const res = (await axios.get(process.env.BACKEND + '/openapi')).data;
+    expect(res).toHaveProperty('paths');
+    expect(
+        omit(res.paths, [
+            "['/playlists'].get.description",
+            "['/playlists'].get.responses['200'].description",
+            "['/playlists'].get.responses['403'].description",
+            "['/user'].get.responses['200'].description",
+            "['/user'].get.responses['403'].description",
+            "['/user'].get.description",
+        ]),
+    ).toEqual({
+        '/playlists': {
+            get: {
+                deprecated: false,
+                operationId: 'getUserPlaylists',
+                responses: {
+                    '200': {
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    items: {
+                                        $ref: '#/components/schemas/Playlist',
+                                    },
+                                    type: 'array',
+                                },
+                            },
+                        },
+                    },
+                    '403': {
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    $ref: '#/components/schemas/ErrorResponse',
+                                },
+                            },
+                        },
+                    },
+                },
+                tags: ['playlists'],
+            },
+        },
+        '/user': {
+            get: {
+                deprecated: false,
+                operationId: 'getAuthUser',
+                responses: {
+                    '200': {
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    $ref: '#/components/schemas/User',
+                                },
+                            },
+                        },
+                    },
+                    '403': {
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    $ref: '#/components/schemas/ErrorResponse',
+                                },
+                            },
+                        },
+                    },
+                },
+                tags: ['user'],
+            },
+        },
+    });
+});
 
+test('openapi components', async () => {
+    const res = (await axios.get(process.env.BACKEND + '/openapi')).data;
+    expect(res).toHaveProperty('components');
 
-api.defaults.baseUrl = "http://127.0.0.1:8000/";
-test("no-auth", async () => {
-    expect((await api.getAuthUser()).status).toBe(403)
-})
-
-
-test("user", async () => {
-    api.defaults.headers = { Cookie: process.env.COOKIE }
-    const res = (await api.getAuthUser()).data;
-    expect(res).toHaveProperty("id");
-    expect(res).toHaveProperty("name");
-    expect(res).toHaveProperty("providers");
-    expect(res).toHaveProperty("email");
-})
-
-test("playlists", async () => {
-    api.defaults.headers = { Cookie: process.env.COOKIE }
-    const res = (await api.getUserPlaylists()).data;
-    expect(Array.isArray(res)).toBe(true);
-    if (res.length > 0) {
-        const l = res[0];
-        expect(l).toHaveProperty("id");
-        expect(l).toHaveProperty("hidden");
-        expect(l).toHaveProperty("title");
-        expect(l).toHaveProperty("count");
-        expect(l.count).toBeGreaterThan(0);
-        expect(l).toHaveProperty("link");
-        expect(l).toHaveProperty("source");
-        expect(l).toHaveProperty("thumbnail");
-        expect(l).toHaveProperty("editable")
-    }
-})
-
+    expect(res.components).toEqual({
+        schemas: {
+            ErrorResponse: {
+                properties: {
+                    message: {
+                        type: 'string',
+                    },
+                },
+                required: ['message'],
+                type: 'object',
+            },
+            Playlist: {
+                properties: {
+                    count: {
+                        format: 'int32',
+                        type: 'integer',
+                    },
+                    editable: {
+                        type: 'boolean',
+                    },
+                    hidden: {
+                        type: 'boolean',
+                    },
+                    id: {
+                        type: 'string',
+                    },
+                    link: {
+                        type: 'string',
+                    },
+                    source: {
+                        type: 'string',
+                    },
+                    thumbnail: {
+                        type: 'string',
+                    },
+                    title: {
+                        type: 'string',
+                    },
+                },
+                required: [
+                    'id',
+                    'title',
+                    'source',
+                    'link',
+                    'count',
+                    'thumbnail',
+                    'editable',
+                    'hidden',
+                ],
+                type: 'object',
+            },
+            ProviderData: {
+                properties: {
+                    name: {
+                        type: 'string',
+                    },
+                    user_data: {
+                        $ref: '#/components/schemas/ProviderUserData',
+                    },
+                },
+                required: ['name', 'user_data'],
+                type: 'object',
+            },
+            ProviderUserData: {
+                properties: {
+                    email: {
+                        type: 'string',
+                    },
+                    id: {
+                        type: 'string',
+                    },
+                    image: {
+                        type: 'string',
+                    },
+                    name: {
+                        type: 'string',
+                    },
+                },
+                required: ['image', 'name', 'email', 'id'],
+                type: 'object',
+            },
+            User: {
+                properties: {
+                    email: {
+                        type: 'string',
+                    },
+                    id: {
+                        type: 'string',
+                    },
+                    name: {
+                        type: 'string',
+                    },
+                    providers: {
+                        items: {
+                            $ref: '#/components/schemas/ProviderData',
+                        },
+                        type: 'array',
+                    },
+                },
+                required: ['id', 'name', 'email', 'providers'],
+                type: 'object',
+            },
+        },
+    });
+});
