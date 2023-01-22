@@ -3,7 +3,13 @@ on: [push]
 
 env:
   COOKIE: ${{ secrets.COOKIE }}
+  ORY_COOKIE: ${{ secrets.ORY_COOKIE }}
+  ORY_TOKEN: ${{ secrets.ORY_TOKEN }}
+  RSPOTIFY_CLIENT_SECRET: ${{ secrets.RSPOTIFY_CLIENT_SECRET }}
   BACKEND: ${{ vars.BACKEND }}
+  RSPOTIFY_CLIENT_ID: ${{ vars.RSPOTIFY_CLIENT_ID }}
+  RSPOTIFY_REDIRECT_URI: ${{ vars.RSPOTIFY_REDIRECT_URI }}
+  SURREAL_URL: ${{ vars.SURREAL_URL }}
 jobs:
   build:
     environment: Test
@@ -34,7 +40,6 @@ jobs:
         with:
           surrealdb-version: nightly
           surrealdb-port: 8001
-      - run: cargo run &
       - run: sleep 20s
       - run: cargo test
 
@@ -52,13 +57,13 @@ jobs:
         with:
           surrealdb-version: nightly
           surrealdb-port: 8001
-      - run: cargo run &
-      - run: sleep 10s
       - uses: actions/setup-node@v2
         with:
           node-version: 16
       - uses: pnpm/action-setup@v2
         with:
           version: 6.0.2
-      - run: cd ts-test && pnpm install
-      - run: cd ts-test && pnpm test
+      - uses: BerniWittmann/background-server-action@v1
+        with:
+          command: cd ts-test && pnpm test
+          start: cargo run
