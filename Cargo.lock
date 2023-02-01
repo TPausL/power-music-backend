@@ -1917,6 +1917,7 @@ dependencies = [
  "rspotify",
  "rspotify-macros",
  "serde",
+ "serde_json",
  "surrealdb",
  "utoipa",
  "yup-oauth2",

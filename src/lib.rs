@@ -26,7 +26,8 @@ pub async fn rocket() -> _ {
         .mount("/", routes![all_options, test, routes::open_api])
         .mount("/user", routes![routes::user::get])
         .mount("/playlists", routes![routes::playlists::get_all])
-        .register("/", catchers![catchers::forbidden])
+        .mount("/merges", routes![routes::merges::create])
+        .register("/", catchers![catchers::forbidden, catchers::unprocessable])
         .attach(fairings::cors::CORS)
 }
 

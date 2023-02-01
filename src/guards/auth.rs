@@ -50,12 +50,11 @@ impl<'r> FromRequest<'r> for AuthUser {
         };
 
         let session_url =
-            dotenv::var("ORY_SESSION_URL").unwrap_or("http://localhost:40000".to_string());
+            dotenv::var("ORY_SESSION_URL").unwrap_or("http://localhost:4000".to_string());
         let mut config = Configuration::new();
         config.base_path = session_url;
 
-        let admin_url =
-            dotenv::var("ORY_ADMIN_URL").unwrap_or("http://localhost:40000".to_string());
+        let admin_url = dotenv::var("ORY_ADMIN_URL").unwrap_or("http://localhost:4000".to_string());
         let mut admin_config = Configuration::new();
         admin_config.bearer_access_token =
             Some(std::env::vars().find(|(k, _v)| k == "ORY_TOKEN").unwrap().1);
@@ -93,7 +92,7 @@ impl<'r> FromRequest<'r> for AuthUser {
         }
 
         return Outcome::Success(AuthUser {
-            id: user.id.to_string(),
+            id: user.id,
             email: traits["email"].as_str().unwrap().to_string(),
             name: traits["name"].as_str().unwrap().to_string(),
             tokens,
