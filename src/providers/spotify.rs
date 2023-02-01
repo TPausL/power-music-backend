@@ -42,10 +42,10 @@ impl Spotify {
 
         *spt.token.lock().await.unwrap() = Some(sp_token.clone());
 
-        (&spt).refresh_token().await.unwrap();
+        spt.refresh_token().await.unwrap();
         Self {
             //user,
-            id: (&spt).me().await.unwrap().id.to_string(),
+            id: spt.me().await.unwrap().id.to_string(),
             client: spt,
         }
     }

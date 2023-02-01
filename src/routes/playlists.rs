@@ -51,7 +51,7 @@ impl HasPlaylists for Spotify {
             let mut items = res.items.to_owned();
             res_lists.append(&mut items);
             offset = Some(offset.unwrap() + 50);
-            if !(res.offset < res.total) {
+            if res.offset >= res.total {
                 break;
             }
         }

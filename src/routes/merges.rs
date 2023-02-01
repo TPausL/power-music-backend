@@ -56,7 +56,7 @@ impl<'r> FromData<'r> for MergeData {
                 ))
             }
         };
-        println!("{:#?}", d);
+        println!("{d:#?}");
         rocket::outcome::Outcome::Failure((
             Status::UnprocessableEntity,
             DataError::InvalidItem("left is not a string".to_string()),

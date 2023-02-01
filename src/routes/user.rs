@@ -29,7 +29,7 @@ impl UserProviders for AuthUser {
                 "spotify" => {
                     provs.push(ProviderData {
                         name: String::from("spotify"),
-                        user_data: Spotify::new(&self).await.get_user_data().await,
+                        user_data: Spotify::new(self).await.get_user_data().await,
                     });
                 }
                 _ => {}
