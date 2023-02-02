@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
 use crate::{
-    db::DB,
+    db::{DB, CanBeStored},
     guards::auth::AuthUser,
     providers::{
         common::{HasProviders, Provider},
@@ -16,9 +16,23 @@ use crate::{
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct DBPlaylist {
-    id: String,
-    hidden: bool,
+    pub id: String,
+    pub hidden: bool,
 }
+
+
+#[async_trait]
+impl CanBeStored for DBPlaylist {
+    
+    const TABLE_NAME: &'static str = "playlist";
+
+    async fn get(&self) -> surrealdb::Result<Box<Self>>{todo!()}
+    async fn store(&self) -> surrealdb::Result<Box<Self>>{todo!()}
+    async fn update(&self) -> surrealdb::Result<Box<Self>>{todo!()}
+    async fn delete(&self) -> surrealdb::Result<Box<Self>>{todo!()}
+}
+
+
 #[derive(Serialize, Deserialize, Debug, Default, ToSchema, PartialEq)]
 #[serde(crate = "rocket::serde")]
 pub struct Playlist {
@@ -80,7 +94,7 @@ impl HasPlaylists for Spotify {
                         >,
                     > = db
                         .create(("playlist", id.to_owned()))
-                        .content(DBPlaylist { id, hidden: false })
+                        .content(DBPlaylist { id: id.to_owned(), hidden: false })
                         .into_future();
                     let _ = statement.await;
                     false
@@ -88,7 +102,7 @@ impl HasPlaylists for Spotify {
             };
             lists.push(Playlist {
                 hidden,
-                id: l.id.to_string(),
+                id,
                 title: l.name.to_string(),
                 link: l.external_urls.get("spotify").unwrap().to_string(),
                 source: "spotify".to_string(),
@@ -105,15 +119,23 @@ impl HasPlaylists for Spotify {
     }
 }
 
+#[async_trait]
+impl HasPlaylists for AuthUser {
+    async fn get_all_playlists(&self) -> Vec<Playlist> {
+
+        let provs = self.get_providers().await;
+        let mut lists: Vec<Playlist> = Vec::new();
+        for p in &provs {
+            lists.extend(match p {
+                Provider::Spotify(sp) => sp.get_all_playlists().await,
+            })
+        }
+        lists
+    }
+}
+
 #[utoipa::path(get,operation_id="getUserPlaylists", path="/playlists" ,responses((status = 200, description =  "All playlists from authenticated user across all connected services", body = [Playlist]), (status = 403, description = "Unauthorized", body = ErrorResponse)))]
 #[get("/")]
 pub async fn get_all(user: AuthUser) -> Json<Vec<Playlist>> {
-    let provs = user.get_providers().await;
-    let mut lists: Vec<Playlist> = Vec::new();
-    for p in &provs {
-        lists.extend(match p {
-            Provider::Spotify(sp) => sp.get_all_playlists().await,
-        })
-    }
-    Json(lists)
+    Json(user.get_all_playlists().await)
 }

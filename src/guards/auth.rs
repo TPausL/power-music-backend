@@ -8,6 +8,8 @@ use rocket::{
     serde::Serialize,
 };
 
+use crate::db::{CanBeStored, CheckDB};
+
 #[derive(Debug)]
 pub enum CookieError {
     Missing,
@@ -31,6 +33,17 @@ pub struct AuthUser {
     pub name: String,
     pub email: String,
     pub tokens: Vec<Token>,
+}
+
+
+#[allow(dead_code)]
+impl AuthUser{
+    async fn mine<T: CanBeStored>(&self, what: impl CheckDB) -> bool {
+        match what.is_in_db::<T>().await {
+            Ok(_val) => {todo!()},
+            Err(_) => false,
+        }
+    }
 }
 
 #[rocket::async_trait]

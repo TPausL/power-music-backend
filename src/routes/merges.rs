@@ -6,13 +6,13 @@ use rocket::{
 };
 use serde::Deserialize;
 use serde_json;
-
+use crate::db::CheckDB;
 use crate::guards::auth::AuthUser;
-
-use super::DataError;
+use crate::routes::playlists::HasPlaylists;
+use super::{DataError, playlists::DBPlaylist};
 #[allow(dead_code)]
 #[derive(Deserialize, Debug)]
-pub struct MergeData {
+pub struct Merge {
     left: String,
     right: String,
     direction: String,
@@ -27,19 +27,15 @@ pub struct MergeDataError {
 }
 
 #[rocket::async_trait]
-impl<'r> FromData<'r> for MergeData {
+impl<'r> FromData<'r> for Merge {
     type Error = DataError;
 
     async fn from_data(req: &'r Request<'_>, data: Data<'r>) -> Outcome<'r, Self> {
         let str_data = match data.open(ByteUnit::GB).into_string().await {
             Ok(str) => str,
-            Err(_) => {
-                req.local_cache(|| MergeDataError {
-                    general: Some("No data was provided!".to_string()),
-                    direction: None,
-                    left: None,
-                    right: None,
-                });
+            Err(e) => {
+                println!("{e:#?}");
+                req.local_cache(|| "No Data was provided!");
                 return Outcome::Failure((
                     Status::UnprocessableEntity,
                     DataError::Missing("no data".to_string()),
@@ -47,16 +43,42 @@ impl<'r> FromData<'r> for MergeData {
             }
         };
 
-        let d: MergeData = match serde_json::from_str::<MergeData>(str_data.as_str()) {
+        let d: Merge = match serde_json::from_str::<Merge>(str_data.as_str()) {
             Ok(d) => d,
-            Err(_e) => {
+            Err(e) => {
+                req.local_cache(|| Some(e.to_string()));
                 return Outcome::Failure((
                     Status::UnprocessableEntity,
                     DataError::Missing("some data is missing".to_string()),
                 ))
             }
         };
-        println!("{d:#?}");
+        
+
+        let user = req.guard::<AuthUser>().await.unwrap();
+        
+
+        match d.left.is_in_db::<DBPlaylist>().await {
+            Ok(list) => {
+                match user.get_all_playlists().await.into_iter().find(|p| p.id == list.id) {
+                    Some(_) => (),
+                    None => {
+                req.local_cache(|| Some("Left playlist doesn't exist!".to_string()));
+                return Outcome::Failure((
+                    Status::UnprocessableEntity,
+                    DataError::Missing("some data is missing".to_string()),
+                ))
+            }
+                }
+            },
+            Err(_e) => {
+                req.local_cache(|| Some("left playlist doesn't exits".to_string()));
+                return Outcome::Failure((
+                    Status::UnprocessableEntity,
+                    DataError::Missing("some data is missing".to_string()),
+                ))
+            }
+        }
         rocket::outcome::Outcome::Failure((
             Status::UnprocessableEntity,
             DataError::InvalidItem("left is not a string".to_string()),
@@ -65,6 +87,6 @@ impl<'r> FromData<'r> for MergeData {
 }
 
 #[post("/", format = "json", data = "<_merge_data>")]
-pub async fn create(_user: AuthUser, _merge_data: MergeData) {
+pub async fn create(_user: AuthUser, _merge_data: Merge) {
     todo!()
 }

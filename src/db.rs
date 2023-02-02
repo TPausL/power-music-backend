@@ -1,11 +1,39 @@
 use async_once::AsyncOnce;
 use dotenv::dotenv;
 use lazy_static::lazy_static;
+use serde::Deserialize;
 use surrealdb::{
     engine::remote::ws::{Client, Ws},
     opt::auth::Root,
     Surreal,
 };
+
+#[async_trait]
+pub trait CheckDB {
+    async fn is_in_db<T: CanBeStored>(&self) -> surrealdb::Result<T>;
+}
+
+#[async_trait]
+pub trait CanBeStored: Send + Sync + for<'a> Deserialize<'a> {
+    const TABLE_NAME: &'static str;
+    async fn get(&self) -> surrealdb::Result<Box<Self>>;
+    async fn store(&self) -> surrealdb::Result<Box<Self>>;
+    async fn update(&self) -> surrealdb::Result<Box<Self>>;
+    async fn delete(&self) -> surrealdb::Result<Box<Self>>;
+}
+
+#[async_trait]
+impl CheckDB for String {
+
+    async fn is_in_db<T: CanBeStored>(&self) -> surrealdb::Result<T>{
+        let db = DB.get().await;
+        let res: T = db.select((T::TABLE_NAME,  self)).await?;
+        Ok(res)
+    }
+
+}
+
+
 
 lazy_static! {
     pub static ref DB: AsyncOnce<Surreal<Client>> = AsyncOnce::new(async {

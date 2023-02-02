@@ -88,6 +88,9 @@ test('openapi components', async () => {
                     message: {
                         type: 'string',
                     },
+                    details: {
+                        type: 'string',
+                    }
                 },
                 required: ['message'],
                 type: 'object',
