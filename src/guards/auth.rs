@@ -8,13 +8,16 @@ use rocket::{
     serde::Serialize,
 };
 
-use crate::db::{CanBeStored, CheckDB};
+use crate::{
+    db::{CanBeStored, InDB},
+    providers::{
+        common::{HasProviders, ProviderClient, ProviderData, UserData},
+        spotify::Spotify,
+    },
+    routes::playlists::{HasPlaylists, Playlist},
+};
 
-#[derive(Debug)]
-pub enum CookieError {
-    Missing,
-    Invalid,
-}
+use super::{CookieError, GuardError};
 
 #[derive(Serialize)]
 #[serde(crate = "rocket::serde")]
@@ -35,20 +38,62 @@ pub struct AuthUser {
     pub tokens: Vec<Token>,
 }
 
-
-#[allow(dead_code)]
-impl AuthUser{
-    async fn mine<T: CanBeStored>(&self, what: impl CheckDB) -> bool {
-        match what.is_in_db::<T>().await {
-            Ok(_val) => {todo!()},
+impl AuthUser {
+    pub async fn mine<T: CanBeStored>(&self, what: impl InDB) -> bool {
+        match what.get_from_db::<T>().await {
+            Ok(d) => d.get_id().contains(&self.id),
             Err(_) => false,
         }
     }
 }
 
+#[async_trait]
+impl HasProviders for AuthUser {
+    async fn get_provider_clients(&self) -> Vec<ProviderClient> {
+        let mut provs: Vec<ProviderClient> = Vec::new();
+        for tok in &self.tokens {
+            match tok.provider.as_str() {
+                "spotify" => provs.push(ProviderClient::Spotify(Spotify::new(self).await)),
+                "google" => (),
+                _ => (),
+            }
+        }
+        provs
+    }
+    async fn get_provider_data(&self) -> Vec<ProviderData> {
+        let mut provs = Vec::new();
+        for t in &self.tokens {
+            match t.provider.as_str() {
+                "spotify" => {
+                    provs.push(ProviderData {
+                        name: String::from("spotify"),
+                        user_data: Spotify::new(self).await.get_user_data().await,
+                    });
+                }
+                _ => {}
+            }
+        }
+        provs
+    }
+}
+
+#[async_trait]
+impl HasPlaylists for AuthUser {
+    async fn get_all_playlists(&self) -> Vec<Playlist> {
+        let provs = self.get_provider_clients().await;
+        let mut lists: Vec<Playlist> = Vec::new();
+        for p in &provs {
+            lists.extend(match p {
+                ProviderClient::Spotify(sp) => sp.get_all_playlists().await,
+            })
+        }
+        lists
+    }
+}
+
 #[rocket::async_trait]
 impl<'r> FromRequest<'r> for AuthUser {
-    type Error = CookieError;
+    type Error = GuardError;
 
     async fn from_request(request: &'r Request<'_>) -> Outcome<Self, Self::Error> {
         dotenv().ok();
@@ -58,7 +103,10 @@ impl<'r> FromRequest<'r> for AuthUser {
         let user_cookie = match user_cookie_opt {
             Some(cookie) => cookie.to_string(),
             None => {
-                return Outcome::Failure((Status::Forbidden, CookieError::Missing));
+                return Outcome::Failure((
+                    Status::Forbidden,
+                    GuardError::Cookie(CookieError::Missing),
+                ));
             }
         };
 
@@ -77,7 +125,10 @@ impl<'r> FromRequest<'r> for AuthUser {
         let id = match s {
             Ok(session) => session.identity.id,
             Err(..) => {
-                return Outcome::Failure((Status::Forbidden, CookieError::Invalid));
+                return Outcome::Failure((
+                    Status::Forbidden,
+                    GuardError::Cookie(CookieError::Invalid),
+                ));
                 // "".to_string()
             }
         };

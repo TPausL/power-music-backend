@@ -75,12 +75,12 @@ async fn playlist() {
         .await
         .unwrap()
         .into_iter()
-        .find(|x| &x.id.as_str() == &"spotify_spotify:user:9dl4j3e3ip4wiazr2xvljimi7_spotify:playlist:2LhLRnArsSwT3FNPumaXPp")
+        .find(|x| &x.id.as_str() == &"spotify_fd4fa310-c8ed-48b1-85ac-767f4829c82d_spotify:playlist:2LhLRnArsSwT3FNPumaXPp")
         .unwrap();
     assert_eq!(
         playlist,
         Playlist {
-            id: "spotify_spotify:user:9dl4j3e3ip4wiazr2xvljimi7_spotify:playlist:2LhLRnArsSwT3FNPumaXPp".to_string(),
+            id: "spotify_fd4fa310-c8ed-48b1-85ac-767f4829c82d_spotify:playlist:2LhLRnArsSwT3FNPumaXPp".to_string(),
             title: "PowerMusicTest".to_string(),
             source: "spotify".to_string(),
             link: "https://open.spotify.com/playlist/2LhLRnArsSwT3FNPumaXPp".to_string(),

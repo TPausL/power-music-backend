@@ -10,14 +10,6 @@ pub mod merges;
 pub mod playlists;
 pub mod user;
 
-#[allow(dead_code)]
-#[derive(Debug)]
-pub enum DataError {
-    Missing(String),
-    InvalidItem(String),
-    InvalidType(String),
-}
-
 #[derive(OpenApi)]
 #[openapi(
     paths(user::get, playlists::get_all),
