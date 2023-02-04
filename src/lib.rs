@@ -11,6 +11,8 @@ mod tests;
 extern crate rocket;
 extern crate dotenv;
 extern crate lazy_static;
+#[macro_use]
+extern crate power_music_backend_derive;
 
 mod catchers;
 mod db;
@@ -27,7 +29,14 @@ pub async fn rocket() -> _ {
         .mount("/user", routes![routes::user::get])
         .mount("/playlists", routes![routes::playlists::get_all])
         .mount("/merges", routes![routes::merges::create])
-        .register("/", catchers![catchers::forbidden, catchers::unprocessable])
+        .register(
+            "/",
+            catchers![
+                catchers::forbidden,
+                catchers::unprocessable,
+                catchers::server
+            ],
+        )
         .attach(fairings::cors::CORS)
 }
 

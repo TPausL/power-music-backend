@@ -1,4 +1,4 @@
-use rocket::{serde::json::Json, request::Request};
+use rocket::{request::Request, serde::json::Json};
 use serde::Serialize;
 use utoipa::ToSchema;
 
@@ -11,10 +11,7 @@ pub struct ErrorResponse {
 
 impl ErrorResponse {
     pub fn new(message: String, details: Option<String>) -> Json<ErrorResponse> {
-        Json(ErrorResponse {
-            message,
-            details,
-        })
+        Json(ErrorResponse { message, details })
     }
 }
 
@@ -25,7 +22,12 @@ pub fn forbidden() -> Json<ErrorResponse> {
 
 #[catch(422)]
 pub fn unprocessable(req: &Request) -> Json<ErrorResponse> {
-    // println!("{:#?}", req);
-    let errors: String = req.local_cache(|| None).clone().unwrap();
-    ErrorResponse::new("Sorry but some data is wrong".to_string(), Some(errors))
+    let errors: Option<String> = req.local_cache(|| None).clone();
+    ErrorResponse::new("Sorry but some data is wrong".to_string(), errors)
+}
+
+#[catch(500)]
+pub fn server(req: &Request) -> Json<ErrorResponse> {
+    let errors: Option<String> = req.local_cache(|| None).clone();
+    ErrorResponse::new("Ooops we messed something up!".to_string(), errors)
 }

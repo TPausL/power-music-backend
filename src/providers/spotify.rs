@@ -1,10 +1,10 @@
-use std::{future::IntoFuture, pin::Pin, thread, time};
+
 
 use rspotify::{clients::*, model::SimplifiedPlaylist, AuthCodeSpotify, Credentials, Token};
 use rspotify_macros::scopes;
 
 use crate::{
-    db::{playlist::DBPlaylist, DB},
+    db::{playlist::DBPlaylist, CanBeStored},
     guards::auth::AuthUser,
     routes::playlists::{HasPlaylists, Playlist},
 };
@@ -93,17 +93,14 @@ impl HasPlaylists for Spotify {
             let res = match req {
                 Err(e) => {
                     println!("{e:#?}");
-                    todo!();
-                    //return res_lists;
+                    break;
                 }
                 Ok(d) => d,
             };
 
-            thread::sleep(time::Duration::from_secs(2));
             let mut items = res.items.to_owned();
             res_lists.append(&mut items);
             offset = Some(offset.unwrap() + 50);
-            println!("{:#?}", res);
             if res.offset >= res.total {
                 println!("break");
                 break;
@@ -113,36 +110,21 @@ impl HasPlaylists for Spotify {
         let mut lists = Vec::new();
         for l in &res_lists {
             let can_edit = l.collaborative || l.owner.id.to_string() == self.id;
-            let db = DB.get().await;
             let id =
                 "spotify_".to_owned() + self.user_id.as_str() + "_" + l.id.to_string().as_str();
-            let statement: Pin<
-                Box<
-                    dyn std::future::Future<Output = Result<DBPlaylist, surrealdb::Error>>
-                        + std::marker::Send
-                        + Sync,
-                >,
-            > = db.select(("playlist", id.to_owned())).into_future();
-
-            let hidden = match statement.await {
-                Ok(db_playlist) => db_playlist.hidden,
-                Err(_) => {
-                    let statement: Pin<
-                        Box<
-                            dyn std::future::Future<Output = Result<DBPlaylist, surrealdb::Error>>
-                                + std::marker::Send
-                                + Sync,
-                        >,
-                    > = db
-                        .create(("playlist", id.to_owned()))
-                        .content(DBPlaylist {
-                            id: id.to_owned(),
-                            hidden: false,
-                        })
-                        .into_future();
-                    let _ = statement.await;
-                    false
-                }
+            let mut list = DBPlaylist {
+                hidden: false,
+                id: id.to_owned(),
+            };
+            let hidden = match list.fetch().await {
+                Ok(p) => p.hidden,
+                Err(_) => match list.store().await {
+                    Ok(p) => p.hidden,
+                    Err(e) => {
+                        dbg!(e);
+                        continue;
+                    }
+                },
             };
             lists.push(Playlist {
                 hidden,

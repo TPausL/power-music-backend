@@ -1,30 +1,39 @@
-use crate::db::playlist::DBPlaylist;
-
 use super::{auth::AuthUser, DataError::*, GuardError};
+use crate::db::{playlist::DBPlaylist, CanBeStored, DB};
 use rocket::{
     data::{ByteUnit, FromData, Outcome},
     http::Status,
     Data, Request,
 };
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize)]
+pub struct MergeData {
+    left: String,
+    right: String,
+    direction: String,
+}
+#[derive(Serialize, Deserialize, Debug, Clone, CanBeStored)]
 pub struct Merge {
+    id: String,
     left: String,
     right: String,
     direction: String,
 }
 
-#[allow(dead_code)]
-pub struct MergeDataError {
-    general: Option<String>,
-    left: Option<String>,
-    right: Option<String>,
-    direction: Option<String>,
+impl Merge {
+    pub fn from_data(data: MergeData) -> Self {
+        Merge {
+            id: uuid::Uuid::new_v4().to_string(),
+            left: data.left,
+            right: data.right,
+            direction: data.direction,
+        }
+    }
 }
 
 #[rocket::async_trait]
-impl<'r> FromData<'r> for Merge {
+impl<'r> FromData<'r> for MergeData {
     type Error = GuardError;
 
     async fn from_data(req: &'r Request<'_>, data: Data<'r>) -> Outcome<'r, Self> {
@@ -37,7 +46,7 @@ impl<'r> FromData<'r> for Merge {
             }
         };
 
-        let d: Merge = match serde_json::from_str::<Merge>(str_data.as_str()) {
+        let d: MergeData = match serde_json::from_str::<MergeData>(str_data.as_str()) {
             Ok(d) => d,
             Err(e) => {
                 req.local_cache(|| Some(e.to_string()));
@@ -65,7 +74,7 @@ impl<'r> FromData<'r> for Merge {
             return Outcome::Failure((Status::UnprocessableEntity, GuardError::Data(Invalid)));
         }
 
-        Outcome::Success(Merge {
+        Outcome::Success(MergeData {
             direction: d.direction,
             left: d.left,
             right: d.right,

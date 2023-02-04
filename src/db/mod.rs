@@ -17,11 +17,11 @@ pub trait InDB {
 #[async_trait]
 pub trait CanBeStored: Send + Sync + for<'a> Deserialize<'a> {
     const TABLE_NAME: &'static str;
-    async fn get_containing(what: String) -> surrealdb::Result<Vec<Self>>;
-    async fn get(&self) -> surrealdb::Result<Box<Self>>;
-    async fn store(&self) -> surrealdb::Result<Box<Self>>;
-    async fn update(&self) -> surrealdb::Result<Box<Self>>;
-    async fn delete(&self) -> surrealdb::Result<Box<Self>>;
+    async fn from_db(id: String) -> surrealdb::Result<Self>;
+    async fn fetch(&mut self) -> surrealdb::Result<Self>;
+    async fn store(&self) -> surrealdb::Result<Self>;
+    async fn update(&self) -> surrealdb::Result<Self>;
+    async fn delete(&self) -> surrealdb::Result<()>;
     fn get_id(&self) -> String;
 }
 

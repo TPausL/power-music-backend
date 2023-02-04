@@ -4,6 +4,7 @@ use rocket::http::{Cookie, Status};
 use rocket::local::asynchronous::Client;
 
 use crate::providers::common::{ProviderData, ProviderUserData};
+use crate::routes::Response;
 use crate::routes::{playlists::Playlist, user::User};
 #[async_test]
 async fn not_found() {
@@ -71,9 +72,9 @@ async fn playlist() {
     );
     let res = client.get("/playlists").cookie(cookie).dispatch().await;
     let playlist = res
-        .into_json::<Vec<Playlist>>()
+        .into_json::<Response<Vec<Playlist>>>()
         .await
-        .unwrap()
+        .unwrap().data
         .into_iter()
         .find(|x| &x.id.as_str() == &"spotify_fd4fa310-c8ed-48b1-85ac-767f4829c82d_spotify:playlist:2LhLRnArsSwT3FNPumaXPp")
         .unwrap();
